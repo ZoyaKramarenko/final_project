@@ -6,7 +6,12 @@ from settings import url
 
 base_url = url
 
-def check_field(driver, password_confirm, field, field_value):
+def check_field(driver, field, field_value):
+   # будем нажимать на это поле для вызова валидации тестируемого поля
+   password_confirm = WebDriverWait(driver, 10).until(
+      EC.visibility_of_element_located((By.ID, 'password-confirm'))
+   )
+
    field.send_keys(field_value)
    password_confirm.click()
 
@@ -20,9 +25,7 @@ def check_field(driver, password_confirm, field, field_value):
 
    return error_text
 
-def test_success_email_login(web_browser):
-   driver = web_browser
-
+def enter_register(driver):
    driver.get(base_url)
 
    btn_register = WebDriverWait(driver, 10).until(
@@ -31,19 +34,58 @@ def test_success_email_login(web_browser):
 
    btn_register.click()
 
-   # будем нажимать на это поле для вызова валидации тестируемого поля
-   password_confirm = WebDriverWait(driver, 10).until(
-      EC.visibility_of_element_located((By.ID, 'password-confirm'))
-   )
+def test_fail_first_name_short(web_browser):
+   driver = web_browser
+
+   enter_register(driver)
 
    field = driver.find_element(By.NAME, 'firstName')
-   assert check_field(driver, password_confirm, field,
-                      'а') == 'Необходимо заполнить поле кириллицей. От 2 до 30 символов.'
+   assert check_field(driver, field, 'ф') == 'Необходимо заполнить поле кириллицей. От 2 до 30 символов.'
+
+def test_fail_first_name_latin(web_browser):
+   driver = web_browser
+
+   enter_register(driver)
+
+   field = driver.find_element(By.NAME, 'firstName')
+   assert check_field(driver, field, 'Boris') == 'Необходимо заполнить поле кириллицей. От 2 до 30 символов.'
+
+def test_fail_last_name_short(web_browser):
+   driver = web_browser
+
+   enter_register(driver)
 
    field = driver.find_element(By.NAME, 'lastName')
-   assert check_field(driver, password_confirm, field,
-                      'а') == 'Необходимо заполнить поле кириллицей. От 2 до 30 символов.'
+   assert check_field(driver, field, 'а') == 'Необходимо заполнить поле кириллицей. От 2 до 30 символов.'
+
+def test_fail_adress_text(web_browser):
+   driver = web_browser
+
+   enter_register(driver)
 
    field = driver.find_element(By.ID, 'address')
-   assert check_field(driver, password_confirm, field,
-                      'fddfjfdjdjffdj') == 'Введите телефон в формате +7ХХХХХХХХХХ или +375XXXXXXXXX, или email в формате example@email.ru'
+   assert check_field(driver, field, 'fddfjfdjdjffdj') == 'Введите телефон в формате +7ХХХХХХХХХХ или +375XXXXXXXXX, или email в формате example@email.ru'
+
+def test_fail_adress_phone_long(web_browser):
+   driver = web_browser
+
+   enter_register(driver)
+
+   field = driver.find_element(By.ID, 'address')
+   assert check_field(driver, field, '+790652931091') == 'Введите телефон в формате +7ХХХХХХХХХХ или +375XXXXXXXXX, или email в формате example@email.ru'
+
+def test_fail_adress_phone_short(web_browser):
+   driver = web_browser
+
+   enter_register(driver)
+
+   field = driver.find_element(By.ID, 'address')
+   assert check_field(driver, field, '+79065293') == 'Введите телефон в формате +7ХХХХХХХХХХ или +375XXXXXXXXX, или email в формате example@email.ru'
+
+def test_fail_password_short(web_browser):
+   driver = web_browser
+
+   enter_register(driver)
+
+   field = driver.find_element(By.ID, 'password')
+   assert check_field(driver, field, 'pas') == 'Длина пароля должна быть не менее 8 символов'
