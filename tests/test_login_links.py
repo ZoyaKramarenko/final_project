@@ -45,6 +45,13 @@ def test_success_mail_link_redirect(web_browser):
 
    assert (current_url.startswith("https://connect.mail.ru/oauth/authorize"))
 
+def test_success_forgot_password_redirect(web_browser):
+   driver = web_browser
+
+   current_url = get_redirect_url(driver, 'forgot_password')
+
+   assert (current_url.startswith("https://b2c.passport.rt.ru/auth/realms/b2c/login-actions/reset-credentials"))
+
 # def test_success_ya_link_redirect(web_browser):
 #    driver = web_browser
 #
